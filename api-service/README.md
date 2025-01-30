@@ -29,26 +29,6 @@ A RESTful API service built with Go (Golang) for managing and monitoring air con
 - PostgreSQL 15
 - Docker and Docker Compose (optional)
 
-
-## Project Structure
-
-api-service/
-├── cmd/
-│   └── main.go           # Application entry point
-├── internal/
-│   ├── auth/             # Authentication logic
-│   ├── common/           # Shared utilities
-│   ├── config/           # Configuration management
-│   └── db/               # Database client
-├── migration/            # Database migrations
-├── pkg/
-│   └── air-conditioner/  # AC sensor business logic
-├── Dockerfile
-├── docker-compose.yml
-├── go.mod
-└── go.sum
-
-
 ## Getting Started
 
 1. Clone the repository
@@ -70,13 +50,16 @@ api-service/
 - `POST /iot/create_table` - Initialize AC sensor table
 - Version info: `GET /version`
 
-DEVELOPMENT
------------
-Available Make Commands:
-make build      # Build the Go binary
-make run        # Run the application
-make dev        # Start development environment
-make test       # Run tests
-make network    # Create Docker network
-make compose    # Start with Docker Compose
-make clean      # Clean Docker resources
+## Development
+
+### Available Make Commands
+
+| Command | Description |
+|---------|-------------|
+| `make build` | Build the Go binary |
+| `make run` | Run the application |
+| `make dev` | Start development environment |
+| `make test` | Run tests |
+| `make network` | Create Docker network |
+| `make compose` | Start with Docker Compose |
+| `make clean` | Clean Docker resources |
