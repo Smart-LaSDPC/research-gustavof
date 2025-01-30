@@ -1,0 +1,83 @@
+# IoT Application Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iot-app
+  labels:
+    io.iot.service: iot-app
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      io.iot.service: iot-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.iot.network/app-network: "true"
+        io.iot.service: iot-app
+    spec:
+      terminationGracePeriodSeconds: 30
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 70
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  io.iot.service: iot-app
+              # Changed from hostname to zone-level spreading for better resilience during node failures
+              # topologyKey: "kubernetes.io/hostname"
+              topologyKey: "topology.kubernetes.io/zone"
+
+      topologySpreadConstraints:
+      # Increased maxSkew to allow more flexibility in pod distribution when nodes fail
+      - maxSkew: 2
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            io.iot.service: iot-app
+
+      containers:
+      - name: gin-app
+        image: gfreire90/iot-research-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+        envFrom:
+        - configMapRef:
+        #     name: iot-env
+            name: iot-env-pg-cluster
+        - secretRef:
+            # name: iot-db-secret
+            name: iot-pg-cluster-secret
+
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        resources:
+          requests:
+            cpu: 300m
+            memory: 512Mi
+          limits:
+            cpu: 600m
+            memory: 1Gi
+
+      restartPolicy: Always

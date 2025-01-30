@@ -1,0 +1,96 @@
+# ===================================
+# DATABASE DEPLOYMENT AND SERVICE
+# ===================================
+
+# Secrets for sensitive information (PostgreSQL credentials)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: iot-db-secret
+  labels:
+    io.iot.service: iot-db-secret
+type: Opaque
+data:
+  POSTGRES_USER: dXNw  # Base64 encoded value for 'usp'
+  POSTGRES_PASSWORD: YWRtaW5hZG1pbnVzcA==  # Base64 encoded value for 'adminadminusp'
+  POSTGRES_DATABASE: aW90  # Base64 encoded value for 'iot'
+  REGISTRY_PWD: eyJhdXRocyI6eyJld3IudnVsdHJjci5jb20iOnsiYXV0aCI6ImNtOWliM1FrWjJWdVpHOWpLekJrTmpaaFptVmpMV1EzTVdJdE5EUm1NUzFoWTJGbExXUm1NMlppTTJJNE56ZGlORG8yUVRSbVdXVmxjRkpGZEdKTlVGbzRSVVpOY25WWlZHRjVUMkpoY0Rjd09RPT0ifX19
+
+---
+
+# PersistentVolumeClaim for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi  # Request 20Gi of persistent storage
+  storageClassName: microk8s-hostpath  # Specify the StorageClass
+
+---
+
+# PostgreSQL Deployment with Persistent Storage
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_DATABASE
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data  # Mount persistent storage to PostgreSQL data directory
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc  # Use the PersistentVolumeClaim
+
+---
+
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: postgres

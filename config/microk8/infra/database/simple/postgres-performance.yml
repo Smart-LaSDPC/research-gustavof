@@ -1,0 +1,178 @@
+# ===================================
+# DATABASE DEPLOYMENT AND SERVICE
+# ===================================
+
+# Secrets for sensitive information (PostgreSQL credentials)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: iot-db-secret
+  labels:
+    io.iot.service: iot-db-secret
+type: Opaque
+data:
+  POSTGRES_USER: dXNw  # Base64 encoded value for 'usp'
+  POSTGRES_PASSWORD: YWRtaW5hZG1pbnVzcA==  # Base64 encoded value for 'adminadminusp'
+  POSTGRES_DATABASE: aW90  # Base64 encoded value for 'iot'
+  REGISTRY_PWD: eyJhdXRocyI6eyJld3IudnVsdHJjci5jb20iOnsiYXV0aCI6ImNtOWliM1FrWjJWdVpHOWpLekJrTmpaaFptVmpMV1EzTVdJdE5EUm1NUzFoWTJGbExXUm1NMlppTTJJNE56ZGlORG8yUVRSbVdXVmxjRkpGZEdKTlVGbzRSVVpOY25WWlZHRjVUMkpoY0Rjd09RPT0ifX19
+
+---
+# Then create a new PVC with your desired configuration
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce  # Change back to ReadWriteOnce as it's likely what your storage class supports
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: microk8s-hostpath  # Change back to original storage class
+
+---
+
+# PostgreSQL Deployment with Persistent Storage
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      # Add topology spread constraints for better scheduling
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: postgres
+
+      # Add affinity rules to avoid scheduling on unreliable nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/unreachable
+                operator: DoesNotExist
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+
+      # Add tolerations at pod spec level
+      tolerations:
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"    # Changed from NoSchedule to NoExecute
+        tolerationSeconds: 300
+
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              cpu: 2000m     # Increased from 1000m
+              memory: 12Gi   # Increased from 4Gi
+            limits:
+              cpu: 4000m     # Increased from 2000m
+              memory: 16Gi   # Increased from 6Gi
+          # Further adjusted probe timings for larger memory footprint
+          readinessProbe:
+            exec:
+              command: 
+                - sh
+                - -c
+                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+            initialDelaySeconds: 90
+            periodSeconds: 15
+          env:
+            # Add PostgreSQL performance tuning parameters
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: iot-db-secret
+                  key: POSTGRES_DATABASE
+            # Optimized PostgreSQL parameters for high memory configuration
+            - name: POSTGRES_MAX_CONNECTIONS
+              value: "200"    # Reduced from 1000 to prevent connection overhead
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_SHARED_BUFFERS
+              value: "4GB"    # Increased from 1GB (about 25% of memory)
+            - name: POSTGRES_EFFECTIVE_CACHE_SIZE
+              value: "12GB"   # Increased from 2GB (about 75% of memory)
+            - name: POSTGRES_WORK_MEM
+              value: "64MB"   # Increased from 16MB
+            - name: POSTGRES_MAINTENANCE_WORK_MEM
+              value: "1GB"    # Increased from 256MB
+            - name: POSTGRES_RANDOM_PAGE_COST
+              value: "1.1"
+            - name: POSTGRES_EFFECTIVE_IO_CONCURRENCY
+              value: "300"    # Increased from 200
+            - name: POSTGRES_MAX_WORKER_PROCESSES
+              value: "4"      # Set to number of CPUs
+            - name: POSTGRES_MAX_PARALLEL_WORKERS
+              value: "4"      # Match max_worker_processes
+            - name: POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER
+              value: "2"      # Half of max_parallel_workers
+            # Added important parameters
+            - name: POSTGRES_SYNCHRONOUS_COMMIT
+              value: "off"    # Improves write performance
+            - name: POSTGRES_CHECKPOINT_COMPLETION_TARGET
+              value: "0.9"    # Spreads out checkpoint writes
+            - name: POSTGRES_WAL_BUFFERS
+              value: "16MB"   # Increased WAL performance
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres # Add subPath to avoid permission issues
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: postgres

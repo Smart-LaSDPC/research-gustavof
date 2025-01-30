@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DATABASE_URL=postgresql://usp:adminadminusp@db:5432/iot
+  #   depends_on:
+  #     - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: usp
+      POSTGRES_PASSWORD: adminadminusp
+      POSTGRES_DB: iot
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:latest
+  #   environment:
+  #     KEYCLOAK_USER: admin
+  #     KEYCLOAK_PASSWORD: admin
+  #     DB_VENDOR: POSTGRES
+  #     DB_ADDR: db
+  #     DB_DATABASE: iot
+  #     DB_USER: usp
+  #     DB_PASSWORD: adminadminusp
+  #   ports:
+  #     - "8081:8080"  # Exposing Keycloak on port 8081
+  #   depends_on:
+  #     - db
+  #   command: start-dev  # Start Keycloak in development mode
+
+volumes:
+  postgres_data:

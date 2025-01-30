@@ -1,0 +1,115 @@
+DS_Store
+.DS_Store
+**/.DS_Store
+.DS_Store?
+._*
+.Trashes
+Thumbs.db
+*/log_results/
+**/log_results/*
+config/microk8/cluster/cluster_ssh
+*/cluster_ssh
+pytest_cache/
+*/pytest_cache/*
+__pycache__/
+*/__pycache__/*
+.pytest_cache/
+*/.pytest_cache/*
+*/tmux
+tmux
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+#add venv env and python files
+venv/
+.venv/
+.v/ 
+*. venv/
+*.venv/
+*.v/ 
+.idea/
+*.idea/
+
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-*
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Backup files
+*.bak
+*~
+*.backup
+
+# K6 test results and logs
+**/log_results/
+**/parser_results/
+**/results/
+**/output/

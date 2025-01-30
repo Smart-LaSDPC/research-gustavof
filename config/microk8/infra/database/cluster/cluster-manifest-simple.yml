@@ -1,0 +1,67 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+
+metadata:
+  labels:
+    team: acid
+  name: pg-cluster
+  namespace: usp-dev
+spec:
+  allowedSourceRanges: null
+  databases:
+    iot: usp
+  enableConnectionPooler: true
+  enableMasterLoadBalancer: false
+  enableMasterPoolerLoadBalancer: false
+  numberOfInstances: 2
+  connectionPooler:
+    numberOfInstances: 2
+    mode: transaction
+    schema: pooler
+    user: pooler
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2000Mi
+      limits:
+        cpu: 4000m
+        memory: 8000Mi
+  postgresql:
+    version: '17'
+    parameters:
+      shared_buffers: '32MB'
+      max_connections: '100'
+  patroni:
+    initdb:
+      encoding: UTF8
+      data-checksums: "true"
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 8000Mi
+    requests:
+      cpu: 500m
+      memory: 2000Mi
+  teamId: acid
+  users:
+    usp:
+      - superuser
+      - createdb
+    pooler:
+      - login
+      - superuser
+
+  volume:
+    size: 20Gi
+    storageClass: microk8s-hostpath
+  preparedDatabases:
+    iot:
+      defaultUsers: true
+      extensions:
+        pg_stat_statements: ""
+      schemas:
+        public: {}

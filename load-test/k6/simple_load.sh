@@ -1,0 +1,1 @@
+for i in {1..10}; do curl -H "Host: iot-api.local" http://iot-api.local/iot/; done;

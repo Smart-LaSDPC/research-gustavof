@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgres-exporter
+  namespace: observability
+  labels:
+    release: kube-prom-stack
+spec:
+  endpoints:
+    - interval: 30s
+      path: /metrics
+      port: metrics
+  namespaceSelector:
+    matchNames:
+      - usp-dev
+  selector:
+    matchLabels:
+      app: postgres-exporter
+      release: kube-prom-stack

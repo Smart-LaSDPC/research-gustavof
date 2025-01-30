@@ -1,0 +1,81 @@
+# -------------------------------------
+# Helm values for NGINX Ingress
+# helm show values ingress-nginx/ingress-nginx
+# https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
+# -------------------------------------
+
+global:
+  image:
+    registry: registry.k8s.io
+
+controller:
+  # -------------------------------------------------
+  # 1) Basic NGINX config overrides
+  # -------------------------------------------------
+  config:
+    load-balance: "round_robin"
+    client-max-body-size: 500m
+    proxy-read-timeout: 300
+    proxy-send-timeout: 300
+    proxy-body-size: 500m
+    log-format: '$remote_addr - $request $status [Pod=$upstream_http_x_pod_name]'
+    log-format-escape-json: true
+    # log-format-upstream: '$remote_addr - $request $status [Pod=$upstream_http_x_pod_name]'
+    log-format-upstream: >-
+      [$time_local] "$request" [upstream=$upstream_status] [client=$status]   \
+      [Pod=$upstream_http_x_pod_name] \
+      [Node=$upstream_http_x_node_name] \
+      $remote_addr - "$http_user_agent" 
+
+# -------------------------------------------------
+  # 2) Service configuration (NodePort for internal network test)
+  # -------------------------------------------------
+  service:
+    # Usually keep "enabled: true" if you want a Service
+    enabled: true
+    type: NodePort
+    ports:
+      http: 80        # Internal port used by nginx-ingress
+      https: 443
+      metrics: 10254
+    
+    nodePorts:
+      http: 30080     # Fixed NodePort - you can forward to this
+      https: 30443    # Fixed NodePort for HTTPS
+    
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+
+
+  # -------------------------------------------------
+  # 3) Metrics for Prometheus
+  # -------------------------------------------------
+  metrics:
+    enabled: true
+    port: 10254
+    service:
+      enabled: true
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+      servicePort: 10254
+      type: ClusterIP
+
+rbac:
+  create: true
+
+# -------------------------------------------------
+# 4) Pod annotations (e.g., for Prometheus scraping)
+# -------------------------------------------------
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "10254"
+
+
+# Make sure internal nginx is listening on port 80
+containerPort:
+  http: 80
+  https: 443

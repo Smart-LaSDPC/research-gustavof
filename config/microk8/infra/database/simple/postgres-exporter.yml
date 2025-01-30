@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+  namespace: usp-dev
+  labels:
+    app: postgres-exporter
+    release: kube-prom-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+        release: kube-prom-stack
+    spec:
+      containers:
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter:latest
+          ports:
+            - containerPort: 9187
+          env:
+            - name: DATA_SOURCE_NAME
+              value: "postgresql://usp:adminadminusp@postgres:5432/iot?sslmode=disable"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter
+  namespace: usp-dev
+  labels:
+    app: postgres-exporter
+    release: kube-prom-stack
+spec:
+  ports:
+    - name: metrics
+      port: 9187
+      targetPort: 9187
+  selector:
+    app: postgres-exporter
