@@ -1,58 +1,59 @@
-# MicroK8s Setup and Configuration
+# Configuration Directory Structure
 
-## Initial Setup
+## Overview
+This directory contains Kubernetes and MicroK8s configuration files organized by functionality. The main sections are:
 
-1. Install and configure MicroK8s following the official documentation:
-   https://microk8s.io/docs/getting-started
+### 1. MicroK8s Cluster Setup (`/microk8/cluster/`)
+- Basic cluster configuration and setup scripts
+- Operating system tuning for optimal performance
+- Installation scripts for master and worker nodes
+- Certificate management
 
-2. Export the kubeconfig file:
-   ```bash
-   microk8s config > config
-   ```
+Key files:
+- `install_master.sh` - Master node installation script
+- `tune-os-limits.sh` - System optimization script
+- `OS.md` - Operating system tuning documentation
 
-## DNS Configuration
+### 2. Infrastructure (`/microk8/infra/`)
+Contains configurations for core infrastructure components:
 
-1. Enable the DNS addon:
-   ```bash
-   microk8s enable dns
-   ```
+#### a. Database (`/infra/database/`)
+- PostgreSQL cluster configurations
+- Simple standalone PostgreSQL setup
+- Database monitoring and metrics exporters
 
-## Certificate Configuration
+Two deployment options:
+- `cluster/` - High-availability PostgreSQL cluster using Zalando operator
+- `simple/` - Single instance PostgreSQL deployment
 
-1. Edit the certificate configuration template:
-   ```bash
-   sudo vim /var/snap/microk8s/current/certs/csr.conf.template
-   ```
+#### b. Ingress (`/infra/ingress/`)
+- NGINX Ingress Controller configuration
+- Custom resource definitions
+- Load balancing settings
+- SSL/TLS configurations
 
-2. Add the following DNS and IP entries to the configuration file:
-   ```conf
-   DNS.6 = andromeda.lasdpc.icmc.usp.br
-   IP.6 = 10.1.1.21    # Note: Use the next available IP.x number
-   ```
+#### c. Observability (`/infra/observability/`)
+- Monitoring stack configuration
+- Grafana dashboards for:
+  - PostgreSQL metrics
+  - NGINX Ingress metrics
+  - Pod metrics and resource usage
+- Service monitors for Prometheus
 
-3. Refresh the certificates by running these commands in order:
-   ```bash
-   sudo microk8s refresh-certs              # Refresh all certificates
-   sudo microk8s refresh-certs --cert server.crt
-   sudo microk8s refresh-certs --cert ca.crt
-   sudo microk8s refresh-certs --cert front-proxy-client.crt
-   ```
+### 3. Microservices (`/microk8/microservices/`)
+Contains Kubernetes configurations for application services:
 
-   > **Note**: After refreshing certificates, MicroK8s services will restart automatically.
+#### a. API Service (`/microservices/api/`)
+- Main IoT application deployment configurations
+- Includes:
+  - `deployment.yml` - IoT application deployment with 8 replicas
+  - `hpa.yml` - Horizontal Pod Autoscaler (8-36 replicas)
+  - `service.yml` - Service configuration for port 8080
+  - `secret.yml` - ConfigMaps and Secrets for environment variables
 
-## Verification
-
-To verify the configuration:
-1. Check DNS resolution:
-   ```bash
-   kubectl get pods -n kube-system | grep dns
-   ```
-
-2. Verify the certificates:
-   ```bash
-   microk8s status
-   ```
-
-
-   Observability has been enabled (user/pass: admin/prom-operator)
-
+Key features:
+- Node affinity rules to avoid control-plane nodes
+- Pod anti-affinity for zone-level spreading
+- Topology spread constraints for high availability
+- Resource limits and requests defined
+- PostgreSQL cluster integration
