@@ -97,4 +97,4 @@ We welcome contributions to enhance the functionality, performance, and usabilit
 MIT License 
 
 ## Acknowledgments
-This research and development effort were made possible by the contributions of Gustavo Freire, Herminio Paucar e Julio Cezar Estrella and the support of the Laboratory of Distributed Systems and Concurrent Programming (LaSDPC) at São Paulo University.
+This research and development effort were made possible by the contributions of Gustavo Freire, Joao Gabriel Zanao, Herminio Paucar e Julio Cezar Estrella and the support of the Laboratory of Distributed Systems and Concurrent Programming (LaSDPC) at São Paulo University.
