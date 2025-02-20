@@ -1,6 +1,5 @@
 #!/bin/bash
-
-
+# bash run_tests.sh -t iot
 # Without analysis: bash run_tests.sh -t iot
 # With analysis: bash run_tests.sh -t iot -a
 

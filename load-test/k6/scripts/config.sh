@@ -6,11 +6,12 @@ USERNAME="gustavo"
 REMOTE_DIR="/home/gustavo/load-test/k6"
 total_tests=4 
 
+# 12
 PORTS=(
-    # 2361
-    # 2362
-    # 2363
-    # 2364
+    2361
+    2362
+    2363
+    2364
     2381
     2382
     2383
@@ -20,8 +21,6 @@ PORTS=(
     2393
     2394
 )
-
-
 
 
 # Validação das configurações

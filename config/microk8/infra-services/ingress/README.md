@@ -13,6 +13,7 @@
 
 ## Test Ingress 
 - sudo kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80
+- sudo microk8s kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80
 - curl -v -H "Host: iot-api.local" http://localhost:80/
 
 # [optional] Update /etc/hosts to point local to ingress-nginx-controller
@@ -20,7 +21,7 @@
 - 127.0.0.1 iot-api.local
 - http://iot-api.local/
 
-## Service MOnitor
+## Service Monitor
 1. Identify the Proper Labels for ServiceMonitor (search for matchLabels)
 - kubectl get prometheus -n observability -o yaml
 - kubectl get servicemonitor -n observability --show-labels

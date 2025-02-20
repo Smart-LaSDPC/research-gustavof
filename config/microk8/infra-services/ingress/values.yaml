@@ -15,34 +15,34 @@ controller:
   # kubectl describe hpa ingress-nginx-controller -n ingress-nginx
   # -------------------------------------------------
   # Increase number of replicas for better load distribution
-  replicaCount: 4
+  replicaCount: 2
 
   # Add autoscaling configuration
-  autoscaling:
-    enabled: true
-    minReplicas: 4
-    maxReplicas: 8
-    # Scale up if either CPU or memory hits these thresholds
-    targetCPUUtilizationPercentage: 75
-    targetMemoryUtilizationPercentage: 75
-    # Additional metrics for more precise scaling
-    customRules:
-      - type: Pods
-        pods:
-          metric:
-            name: nginx_ingress_controller_nginx_process_connections
-          target:
-            type: AverageValue
-            averageValue: 10000
+  # autoscaling:
+  #   enabled: true
+  #   minReplicas: 2
+  #   maxReplicas: 4
+  #   # Scale up if either CPU or memory hits these thresholds
+  #   targetCPUUtilizationPercentage: 75
+  #   targetMemoryUtilizationPercentage: 75
+  #   # Additional metrics for more precise scaling
+  #   customRules:
+  #     - type: Pods
+  #       pods:
+  #         metric:
+  #           name: nginx_ingress_controller_nginx_process_connections
+  #         target:
+  #           type: AverageValue
+  #           averageValue: 10000
 
   # Define resource requests/limits for HPA to work properly
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 1Gi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
+  # resources:
+    # requests:
+    #   cpu: 1000m
+    #   memory: 1Gi
+    # limits:
+    #   cpu: 2000m
+    #   memory: 2Gi
 
   # -------------------------------------------------
   # 2) Basic NGINX config overrides

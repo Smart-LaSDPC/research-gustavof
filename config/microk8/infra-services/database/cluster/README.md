@@ -38,11 +38,13 @@ kubectl delete pod -n kube-system -l k8s-app=calico-node
 # Use the master for DDL (CREATE, ALTER, DROP)
 k port-forward svc/pg-cluster-pooler 5432:5432 -n usp-dev
 
-username: kubectl get secret usp.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.username}' | base64 -d
-password: kubectl get secret usp.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
-e.g
-username: usp
-password: 0puJtnX8hSon7DsRsYQz0rbICL0OyX2guC0mRGZolHhuzZf3AuaQFitSh7DYQHUD
+secrets at usp.pg-cluster.credentials.postgresql.acid.zalan.do
+
+MASTER password: 
+kubectl get secret usp.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
+
+POOLER password:
+kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
 
 # Use the pooler for queries or DML (SELECT, INSERT, UPDATE, DELETE) - and to connect the apps to it
 username: kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.username}' | base64 -d
@@ -62,7 +64,9 @@ GRANT USAGE, SELECT ON SEQUENCE ac_sensor_id_seq TO pooler;
 To completely remove the database cluster and all associated resources, run these commands in order:
 
 # Delete the cluster
+
 kubectl delete -f cluster-manifest.yml -n usp-dev
+kubectl delete all,secrets,configmaps,endpoints,pvc,pdb,svc -l application=spilo -n usp-dev
 
 # Delete associated PVCs
 kubectl delete pvc pgdata-pg-cluster-0 -n usp-dev
@@ -84,7 +88,6 @@ kubectl delete pdb postgres-pg-cluster-pdb -n usp-dev
 kubectl get pods -n usp-dev --show-labels | grep pg-cluster
 
 
-kubectl delete all,secrets,configmaps,endpoints,pvc,pdb -l application=spilo -n usp-dev
 
 # If still having issues, force delete the PostgreSQL custom resource
 kubectl patch postgresql pg-cluster -n usp-dev -p '{"metadata":{"finalizers":null}}' --type=merge
