@@ -30,7 +30,7 @@ kubectl delete pod -n kube-system -l k8s-app=calico-node
 
 
 ## Creating the cluster
-- k apply -f cluster-manifest.yml -n usp-dev
+k apply -f cluster-manifest.yml -n usp-dev
 
 
 ## Connect to the database

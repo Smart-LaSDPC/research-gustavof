@@ -13,40 +13,24 @@ spec:
   enableConnectionPooler: true
   enableMasterLoadBalancer: false
   enableMasterPoolerLoadBalancer: false
-  numberOfInstances: 3
+  numberOfInstances: 6
   connectionPooler:
-    numberOfInstances: 3
+    numberOfInstances: 4
     mode: transaction
     schema: pooler
     user: pooler
     resources:
       requests:
-        cpu: 200m
-        memory: 4000Mi
-      limits:
         cpu: 1000m
+        memory: 2000Mi
+      limits:
+        cpu: 4000m
         memory: 8000Mi
   postgresql:
     version: '17'
     parameters:
-      shared_buffers: '8GB'
-      max_connections: '1000'
-      work_mem: '64MB'
-      maintenance_work_mem: '1GB'
-      effective_cache_size: '16GB'
-      random_page_cost: '1.1'
-      max_worker_processes: '16'
-      max_parallel_workers_per_gather: '8'
-      max_parallel_workers: '16'
-      wal_buffers: '16MB'
-      checkpoint_completion_target: '0.9'
-      default_statistics_target: '500'
-      effective_io_concurrency: '200'
-      parallel_leader_participation: 'on'
-      synchronous_commit: 'off'
-      full_page_writes: 'off'
-      idle_in_transaction_session_timeout: '30s'
-      statement_timeout: '60s'
+      shared_buffers: '32MB'
+      max_connections: '100'
   patroni:
     initdb:
       encoding: UTF8
@@ -56,12 +40,12 @@ spec:
     retry_timeout: 10
     maximum_lag_on_failover: 1048576
   resources:
-    requests:
-      cpu: 500m
-      memory: 8000Mi
     limits:
       cpu: 2000m
-      memory: 16000Mi
+      memory: 8000Mi
+    requests:
+      cpu: 500m
+      memory: 2000Mi
   teamId: acid
   users:
     usp:
