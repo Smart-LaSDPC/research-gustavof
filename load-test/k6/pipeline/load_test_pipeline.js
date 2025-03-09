@@ -59,35 +59,42 @@ function getWaitTime(distribution, params) {
 
 // Test pipeline configurations for all distributions
 const testPipeline = [
-    { vus: 250, duration: '10m', distribution: DISTRIBUTIONS.NORMAL, mean: 1, stddev: 0.2 },
-    { vus: 250, duration: '10m', distribution: DISTRIBUTIONS.UNIFORM, min: 0.5, max: 1.5 },
-
+    { vus: 50,duration: '0.1m', distribution: DISTRIBUTIONS.POISSON, lambda: 1 },
+    { vus: 50, duration: '0.1m', distribution: DISTRIBUTIONS.EXPONENTIAL, lambda: 1 }
 
 ];
 
-// Select the test based on the environment variable ITERATION_INDEX
-const iterationIndex = __ENV.ITERATION_INDEX || 0;
-const config = testPipeline[iterationIndex % testPipeline.length];
+// Get test configuration based on environment variable
+const testIndex = __ENV.TEST_INDEX ? parseInt(__ENV.TEST_INDEX) : 0;
+const config = testPipeline[testIndex];
 
-// Set k6 options dynamically based on the selected test
 export let options = {
     vus: config.vus,
     duration: config.duration,
 };
 
+export function setup() {
+    console.log('\n----------------------------------------');
+    console.log(`Running test configuration ${testIndex + 1}/${testPipeline.length}:`);
+    console.log(JSON.stringify(config, null, 2));
+    console.log('----------------------------------------\n');
+}
+
 export default function () {
     const wait = getWaitTime(config.distribution, {
-        mean: config.mean || 1,               // Default values for NORMAL
+        mean: config.mean || 1,
         stddev: config.stddev || 0.2,
-        lambda: config.lambda || 1,           // Default values for POISSON and EXPONENTIAL
-        min: config.min || 0.5,               // Default values for UNIFORM
+        lambda: config.lambda || 1,
+        min: config.min || 0.5,
         max: config.max || 1.5,
     });
 
     sleep(wait);
 
-    // const res = http.get('http://localhost:8080/iot');
-    const res = http.get('http://iot-api.local/iot/');
+    let res = http.get('http://10.1.1.21:30080/iot?limit=1', {
+        headers: { Host: 'iot-api' }
+    });
+    
     check(res, {
         'status is 200': (r) => r.status === 200,
     });

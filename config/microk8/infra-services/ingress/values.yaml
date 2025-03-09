@@ -45,7 +45,7 @@ controller:
     #   memory: 2Gi
 
   # -------------------------------------------------
-  # 2) Basic NGINX config overrides
+  # 2) NGINX config 
   # -------------------------------------------------
   config:
     load-balance: "round_robin"

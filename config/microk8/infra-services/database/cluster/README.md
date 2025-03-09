@@ -47,8 +47,10 @@ POOLER password:
 kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
 
 # Use the pooler for queries or DML (SELECT, INSERT, UPDATE, DELETE) - and to connect the apps to it
-username: kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.username}' | base64 -d
-password: kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
+username: 
+kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.username}' | base64 -d
+password: 
+kubectl get secret pooler.pg-cluster.credentials.postgresql.acid.zalan.do -n usp-dev -o jsonpath='{.data.password}' | base64 -d
 e.g
 username: pooler
 password: 3mjcGq43XTcSGq39qxqmyNJYxDXAQWesaVHBdJhTvQIbMcZ9BsIQ3lYqa5g99KFt

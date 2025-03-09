@@ -6,6 +6,11 @@ metadata:
     team: acid
   name: pg-cluster
   namespace: usp-dev
+  annotations:
+    # Configure the connection pooler parameters
+    connection-pooler-configuration: |
+      max_client_conn = 400
+      default_pool_size = 20
 spec:
   allowedSourceRanges: null
   databases:
@@ -17,20 +22,24 @@ spec:
   connectionPooler:
     numberOfInstances: 4
     mode: transaction
+    # parameters:
+    #   default_pool_size: 20
+    #   max_client_conn: 400
     schema: pooler
     user: pooler
     resources:
       requests:
-        cpu: 1000m
-        memory: 2000Mi
+        cpu: 500m
+        memory: 1500Mi
       limits:
-        cpu: 4000m
-        memory: 8000Mi
+        cpu: 1500m
+        memory: 6500Mi
   postgresql:
     version: '17'
     parameters:
       shared_buffers: '32MB'
-      max_connections: '100'
+      max_connections: '1000'
+      superuser_reserved_connections: '50'
   patroni:
     initdb:
       encoding: UTF8
@@ -41,11 +50,11 @@ spec:
     maximum_lag_on_failover: 1048576
   resources:
     limits:
-      cpu: 2000m
-      memory: 8000Mi
+      cpu: 1000m
+      memory: 6000Mi
     requests:
       cpu: 500m
-      memory: 2000Mi
+      memory: 1500Mi
   teamId: acid
   users:
     usp:

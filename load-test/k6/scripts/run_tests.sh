@@ -43,10 +43,10 @@ run_test_vm() {
     
     # Executar o teste e análise
     if ! ssh -i ~/.ssh/id_andromeda -p "$port" "$USERNAME@andromeda.lasdpc.icmc.usp.br" "cd $REMOTE_DIR/$test_dir && \
-        k6 run --out json=results/logs/${test_type}_test_vm${port}_results.json \
+        bash run_pipeline.sh \
         -e VM_PORT=$port \
         -e VM_NAME=vm${port} \
-        $test_file $([ "$run_analysis" = true ] && echo "&& python3 analyze_results.py $port $test_type")"; then
+        $([ "$run_analysis" = true ] && echo "&& python3 analyze_results.py $port $test_type")"; then
         ((falhas++))
     fi
 
